@@ -1,0 +1,92 @@
+drop database if exists my_shop;
+create database my_shop;
+use my_shop;
+
+--Таблица необходима для того, чтобы знать своих клиентов
+drop table if exists bayers;
+create table bayers(
+id SERIAL PRIMARY KEY,
+name varchar (255),
+surename varchar(255),
+telephone bigint,
+index  (telephone)
+) COMMENT = 'покупатели';
+
+insert into bayers 
+(name, surename, telephone) 
+values
+('Генадий', 'Генадиевич', 877777777),
+('Владимир', 'Владимирович', 8777111111),
+('Сергей', 'Сергеевич', 8777111111);
+
+--Таблица менеджеров для ослеживания продажи товаров
+drop table if exists managers;
+create table managers (
+id INT UNSIGNED,
+bayer_id  INT UNSIGNED,
+name varchar (255),
+surename varchar(255)
+) COMMENT = 'менеджеры';
+
+INSERT INTO managers (name, surename) VALUES
+  ('Геннадий', 'Валерьевич'),
+  ('Наталья', 'Александровна'),
+  ('Александр', 'Владимирович');
+
+drop table if exists catalogs;
+CREATE TABLE catalogs (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) COMMENT 'Название раздела',
+  UNIQUE unique_name(name(10))
+) COMMENT = 'Разделы интернет-магазина';
+
+INSERT INTO catalogs VALUES
+  (NULL, 'Сумки'),
+  (NULL, 'Ноутбуки'),
+  (NULL, 'Персональные компьютеры');
+ 
+DROP TABLE IF EXISTS products;
+CREATE TABLE products (
+  id INT UNSIGNED,
+  name VARCHAR(255) COMMENT 'Название',
+  desription TEXT COMMENT 'Описание',
+  price DECIMAL (11,2) COMMENT 'Цена',
+  catalog_id INT UNSIGNED
+) COMMENT = 'Товарные позиции';
+
+INSERT INTO products
+  (name, desription, price, catalog_id)
+VALUES
+('Рюкзак для ноутбуков', 'Материал Оксфорд, Рюкзак состоит из трёх отделений, Отделение для ноутбука имеет двухслойную молнию-антивор', 5000.00, 4),
+  ('Ноутбук HP', 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.', 12700.00, 3),
+  ('Настольный компьютер HP Pavilion ', 'Процессор для настольных персональных компьютеров, основанных на платформе AMD.', 200000.00, 3);
+
+--Таблица заказов для отслеживания продаж
+DROP TABLE IF EXISTS orders;
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  user_id INT UNSIGNED,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY index_of_user_id(user_id)
+) COMMENT = 'Заказы';
+
+DROP TABLE IF EXISTS orders_products;
+CREATE TABLE orders_products (
+  id SERIAL PRIMARY KEY,
+  order_id INT UNSIGNED,
+  product_id INT UNSIGNED,
+  bayers_id INT UNSIGNED,
+  total INT UNSIGNED DEFAULT 1 COMMENT 'Количество заказанных товарных позиций',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Состав заказа';
+
+select 
+m.name, m.surename, p.price, p.name, b.name, b.surename
+from
+managers as m
+join
+products as p
+join 
+bayers as b
